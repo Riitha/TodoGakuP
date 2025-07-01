@@ -1,14 +1,14 @@
 {
-    "todos": [
-        {
-            "id": "1",
-            "task": "Belajar React",
-            "status": false
-        },
-        {
-            "id": "2",
-            "task": "Belajar N2",
-            "status": true
-        }
-    ]
+  "todos": [
+    {
+      "id": "1",
+      "task": "Belajar React",
+      "status": false
+    },
+    {
+      "id": "2",
+      "task": "Belajar N2",
+      "status": false
+    }
+  ]
 }
