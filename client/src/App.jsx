@@ -15,6 +15,10 @@ function App() {
   const done = todos.filter(todo => todo.status).length;
   const progress = total === 0 ? 0 : Math.round((done / total) * 100);
   //end progress bar useState
+  //edit useState
+  const [editId, setEditId] = useState(null);
+  const [editText, setEditText] = useState("");
+  //end edit useState
   // fetch todos
   async function FetchTodos() {
     try {
@@ -104,50 +108,97 @@ function App() {
     }
   }
   //end chara icon
+
+  //function editingTask
+  function editingTask(id, task) {
+    setEditId(id);
+    setEditText(task);
+  }
+  //end function editingTask
+
+  //handleEditSubmit
+  async function handleEditSubmit(id) {
+    try {
+      await fetch(`http://localhost:3000/todos/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          task: editText,
+        }),
+      });
+      const updatedTodos = todos.map(todo =>
+        todo.id === id ? {...todo, task: editText} : todo
+      );
+      setTodos(updatedTodos)
+      
+      setEditId(null);
+      setEditText("");
+    } catch (error) {
+      console.error('404', error);
+    }
+  }
+  //end handleEditSubmit
+
   //use effect
   useEffect(() => {
-    FetchTodos();
+  FetchTodos();
   }, []);
-  return (
-    <>
-      <div className="avatar">
-        <div className="ring-primary ring-offset-base-100 w-24 rounded-full ring-2 ring-offset-2">
-          <img 
-          src= {getCharacter(progress)}
-          alt='temari.png'
-          />
-        </div>
-      </div>
-      <h1>Daftar Task</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type='text'
-          placeholder='やりたい事入力してよね'
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <button type='submit'>add</button>
-      </form>
-      <ul>
-        {todos.map(todo => (
-          <li key={todo.id}>
-            <input
-              type='checkbox'
-              checked={todo.status}
-              onChange={() => handleToggleStatus(todo.id, todo.status)}
+    return (
+      <>
+        <div className="avatar">
+          <div className="ring-primary ring-offset-base-100 w-24 rounded-full ring-2 ring-offset-2">
+            <img
+              src={getCharacter(progress)}
+              alt='temari.png'
             />
-            {todo.task} {todo.status ? '✅' : ''}
-            <button onClick={() => handleDelete(todo.id)}>del</button>
-          </li>
-        ))}
-      </ul>
-      <div
-        className="radial-progress bg-primary text-primary-content border-primary border-4"
-        style={{ "--value": progress }} aria-valuenow={progress} role="progressbar">
-        {progress}%
-      </div>
-    </>
-  )
-}
+          </div>
+        </div>
+        <h1>Daftar Task</h1>
+          <form onSubmit={handleSubmit}>
+            <input
+              type='text'
+              placeholder='やりたい事入力してよね'
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+            <button type='submit'>add</button>
+          </form>
+          <ul>
+            {todos.map(todo => (
+              <li key={todo.id}>
+                {editId === todo.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                    />
+                    <button onClick={() => handleEditSubmit(todo.id)}>Save</button>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      type="checkbox"
+                      checked={todo.status}
+                      onChange={() => handleToggleStatus(todo.id, todo.status)}
+                    />
+                    {todo.task} {todo.status ? '✅' : ''}
+                    <button onClick={() => handleDelete(todo.id)}>del</button>
+                    <button onClick={() => editingTask(todo.id, todo.task)}>✏️</button>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+          <div
+            className="radial-progress bg-primary text-primary-content border-primary border-4"
+            style={{ "--value": progress }} aria-valuenow={progress} role="progressbar">
+            {progress}%
+          </div>
+        </>
+      )
+    }
 
 export default App
