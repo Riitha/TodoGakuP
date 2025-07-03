@@ -3,6 +3,9 @@ import './App.css'
 import normalImg from './assets/normal.png';
 import taskImg from './assets/tochuu.png';
 import doneImg from './assets/gj.png';
+import ListTodo from './components/ListTodo';
+import Swal from 'sweetalert2'
+
 
 function App() {
   const [todos, setTodos] = useState([])
@@ -30,8 +33,12 @@ function App() {
       });
       const data = await res.json();
       setTodos(data)
-    } catch (error) {
-      console.error('error', error);
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Terjadi kesalahan. Silakan coba lagi.",
+      });
     }
   }
   //end fetch todos
@@ -118,87 +125,115 @@ function App() {
 
   //handleEditSubmit
   async function handleEditSubmit(id) {
-    try {
-      await fetch(`http://localhost:3000/todos/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          task: editText,
-        }),
-      });
-      const updatedTodos = todos.map(todo =>
-        todo.id === id ? {...todo, task: editText} : todo
-      );
-      setTodos(updatedTodos)
-      
-      setEditId(null);
-      setEditText("");
-    } catch (error) {
-      console.error('404', error);
+    const result = await Swal.fire({
+      title: "変更するの?",
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: "はい",
+      denyButtonText: "いいえ",
+    });
+    if (result.isConfirmed) {
+      try {
+        await fetch(`http://localhost:3000/todos/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            task: editText,
+          }),
+        });
+        const updatedTodos = todos.map(todo =>
+          todo.id === id ? { ...todo, task: editText } : todo
+        );
+        setTodos(updatedTodos)
+        Swal.fire("成功しました");
+      } catch (error) {
+        Swal.fire("エラーが発生しました", error.message, "error");
+      }
+    } else if (result.isDenied) {
+      Swal.fire("キャンセルしました");
     }
+    setEditId(null);
+    setEditText("");
   }
   //end handleEditSubmit
 
   //use effect
   useEffect(() => {
-  FetchTodos();
+    FetchTodos();
   }, []);
-    return (
-      <>
-        <div className="avatar">
-          <div className="ring-primary ring-offset-base-100 w-24 rounded-full ring-2 ring-offset-2">
-            <img
-              src={getCharacter(progress)}
-              alt='temari.png'
-            />
+  return (
+    <>
+      <main className='w-full h-screen'>
+
+        <div className="flex gap-[20px] flex-col justify-start items-center flex-nowrap bg-indigo-900 mx-50 mt-50 border border-none rounded-xl p-8">
+
+          <div className='flex gap-4 flex-col items-center'>
+            <div className="avatar">
+              <div className="ring-primary ring-offset-base-100 w-24 rounded-full ring-2 ring-offset-2">
+                <img
+                  src={getCharacter(progress)}
+                  alt='temari.png'
+                />
+              </div>
+            </div>
+            <h1 className="text-lg font-bold">TODOリスト</h1>
           </div>
-        </div>
-        <h1>Daftar Task</h1>
-          <form onSubmit={handleSubmit}>
-            <input
-              type='text'
-              placeholder='やりたい事入力してよね'
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <button type='submit'>add</button>
-          </form>
-          <ul>
-            {todos.map(todo => (
-              <li key={todo.id}>
-                {editId === todo.id ? (
-                  <>
-                    <input
-                      type="text"
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                    />
-                    <button onClick={() => handleEditSubmit(todo.id)}>Save</button>
-                  </>
-                ) : (
-                  <>
-                    <input
-                      type="checkbox"
-                      checked={todo.status}
-                      onChange={() => handleToggleStatus(todo.id, todo.status)}
-                    />
-                    {todo.task} {todo.status ? '✅' : ''}
-                    <button onClick={() => handleDelete(todo.id)}>del</button>
-                    <button onClick={() => editingTask(todo.id, todo.task)}>✏️</button>
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+
+
+          <div>
+            <form onSubmit={handleSubmit}>
+              <fieldset className="fieldset">
+                <legend className="fieldset-legend text-center">プロデューサー今日の予定？</legend>
+                <div className='flex gap-2'>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="入力してください"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                  />
+                  <button type='submit'>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+
+                  </button>
+                </div>
+              </fieldset>
+
+
+            </form>
+
+          </div>
+
+          <div>
+            <ul className='list bg-base-100 rounded-box shadow-md p-2'>
+              {todos.map(todo => (
+                <ListTodo
+                  key={todo.id}
+                  todo={todo}
+                  editId={editId}
+                  editText={editText}
+                  setEditText={setEditText}
+                  handleEditSubmit={handleEditSubmit}
+                  handleToggleStatus={handleToggleStatus}
+                  handleDelete={handleDelete}
+                  editingTask={editingTask}
+                />
+              ))}
+            </ul>
+          </div>
           <div
             className="radial-progress bg-primary text-primary-content border-primary border-4"
             style={{ "--value": progress }} aria-valuenow={progress} role="progressbar">
             {progress}%
           </div>
-        </>
-      )
-    }
+        </div>
+      </main>
+    </>
+  );
+}
 
 export default App
