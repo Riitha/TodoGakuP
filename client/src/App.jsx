@@ -36,8 +36,8 @@ function App() {
     } catch {
       Swal.fire({
         icon: "error",
-        title: "Oops...",
-        text: "Terjadi kesalahan. Silakan coba lagi.",
+        title: "エラー発生",
+        text: "データ読み込みが失敗、再起動してください！",
       });
     }
   }
@@ -167,7 +167,7 @@ function App() {
     <>
       <main className='w-full h-screen'>
 
-        <div className="flex gap-[20px] flex-col justify-start items-center flex-nowrap bg-indigo-900 mx-50 mt-50 border border-none rounded-xl p-8">
+        <div className="flex flex-col items-center gap-5 bg-indigo-900 border-none rounded-xl p-8 mx-auto mt-50 w-full max-w-md">
 
           <div className='flex gap-4 flex-col items-center'>
             <div className="avatar">
@@ -209,7 +209,7 @@ function App() {
           </div>
 
           <div>
-            <ul className='list bg-base-100 rounded-box shadow-md p-2'>
+            <ul className='list bg-base-100 rounded-box shadow-md p-2 max-h-[200px] overflow-y-auto'>
               {todos.map(todo => (
                 <ListTodo
                   key={todo.id}
