@@ -12,7 +12,7 @@ function App() {
   //text form
   const [text, setText] = useState('');
   //end text form
-  const url = "http://localhost:3000/todos"
+  const url = "https://locrian-quixotic-dash.glitch.me/todos"
   //progress bar useState
   const total = todos.length;
   const done = todos.filter(todo => todo.status).length;
@@ -134,7 +134,7 @@ function App() {
     });
     if (result.isConfirmed) {
       try {
-        await fetch(`http://localhost:3000/todos/${id}`, {
+        await fetch(`https://locrian-quixotic-dash.glitch.me/todos/${id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
